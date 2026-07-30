@@ -1,0 +1,40 @@
+experiment:
+  name: mulsen_ad_crossmodal_pilot
+  seeds: [0, 1, 2]
+
+paths:
+  dataset_root: datasets/MulSen_AD
+  official_repo: official/MulSen-AD
+  artifacts_root: artifacts
+  rgb_checkpoint: null
+  point_checkpoint: checkpoints/pointmae_pretrain.pth
+
+data:
+  categories: all
+  img_size: 224
+  object_label_rule: any_modality_anomalous
+
+embeddings:
+  cache_path: artifacts/embeddings/mulsen_object_embeddings.npz
+  pool: mean
+  encoder_id: official_mulsen_ad
+
+scoring:
+  k: 5
+  normalizer_split: train
+  gamma: 1.0
+
+projection:
+  enabled: true
+  output_dim: 128
+  hidden_dim: null
+  epochs: 50
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  temperature: 0.1
+
+outputs:
+  predictions_dir: artifacts/predictions
+  metrics_dir: artifacts/metrics
+  figures_dir: artifacts/figures

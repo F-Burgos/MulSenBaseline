@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*:Zone.Identifier
+codex_mulsen_ad_pilot.md
+
+artifacts/
+datasets/
+checkpoints/
+*.npz
+*.pth
+*.pt

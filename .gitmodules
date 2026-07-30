@@ -1,0 +1,3 @@
+[submodule "official/MulSen-AD"]
+	path = official/MulSen-AD
+	url = https://github.com/MapleBoat/MulSen-AD.git
