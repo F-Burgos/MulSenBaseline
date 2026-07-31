@@ -57,6 +57,23 @@ def command_extract_embeddings(args: argparse.Namespace) -> None:
     print(json.dumps({"embedding_cache": str(output)}, indent=2, sort_keys=True))
 
 
+def command_score_embeddings(args: argparse.Namespace) -> None:
+    from src.score_embeddings import score_embedding_cache
+
+    config = load_config(args.config)
+    artifacts_root = Path(config["paths"]["artifacts_root"])
+    cache_path = args.cache or Path(config["embeddings"]["cache_path"])
+    predictions_path = args.predictions or artifacts_root / "predictions" / "embedding_scores.csv"
+    metrics_path = args.metrics or artifacts_root / "metrics" / "embedding_score_metrics.json"
+    metrics = score_embedding_cache(
+        cache_path=cache_path,
+        k=config["scoring"]["k"],
+        predictions_path=predictions_path,
+        metrics_path=metrics_path,
+    )
+    print(json.dumps(metrics, indent=2, sort_keys=True))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Minimal MulSen-AD pilot runner")
     parser.add_argument("--config", type=Path, default=Path("configs/mulsen_pilot.yaml"))
@@ -67,12 +84,18 @@ def main() -> None:
     extract_parser.add_argument("--output", type=Path, default=None)
     extract_parser.add_argument("--max-samples-per-split", type=int, default=None)
     extract_parser.add_argument("--device", default=None, help="Device override such as 'cuda' or 'cpu'")
+    score_parser = subparsers.add_parser("score-embeddings", help="Run E1-E5 memory-bank scoring")
+    score_parser.add_argument("--cache", type=Path, default=None)
+    score_parser.add_argument("--predictions", type=Path, default=None)
+    score_parser.add_argument("--metrics", type=Path, default=None)
     args = parser.parse_args()
 
     if args.command == "index":
         command_index(args)
     elif args.command == "extract-embeddings":
         command_extract_embeddings(args)
+    elif args.command == "score-embeddings":
+        command_score_embeddings(args)
 
 
 if __name__ == "__main__":
