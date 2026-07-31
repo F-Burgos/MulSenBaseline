@@ -1,6 +1,6 @@
 # MulSen-AD Pilot Current Status
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 ## Objective
 
@@ -28,10 +28,10 @@ The key scientific comparison is:
   - virtual environments
   - Python caches
 
-Current baseline commit:
+Current pushed baseline commit:
 
 ```text
-44d9b41 Initialize MulSen-AD pilot scaffold
+19b613b Add CUDA extension build helpers
 ```
 
 ## Environment
@@ -60,7 +60,8 @@ Official MulSen-AD GPU/runtime dependencies are tracked separately in:
 requirements/official-mulsen-gpu.txt
 ```
 
-These need CUDA/toolchain-specific handling on the experiment server.
+The remote runtime now uses modern PyTorch plus pure-Torch fallbacks for the two
+legacy CUDA extension imports used by the official code.
 
 ## Verified
 
@@ -73,7 +74,7 @@ uv run pytest
 Result:
 
 ```text
-5 passed
+6 passed, 1 skipped
 ```
 
 Remote cluster checks:
@@ -88,7 +89,7 @@ uv run pytest
 Result:
 
 ```text
-5 passed
+6 passed
 ```
 
 Remote dataset checks:
@@ -105,6 +106,15 @@ Result:
 644 test samples
 2035 total samples
 ```
+
+Remote checkpoint checks:
+
+```text
+checkpoints/pointmae_pretrain.pth
+checkpoints/vit_base_patch8_224.dino.pth
+```
+
+Both required encoder checkpoints are present on the remote cluster.
 
 ## Implemented So Far
 
@@ -144,8 +154,10 @@ Embedding extraction scaffold:
 
 - `src/extract_embeddings.py`
 - Contains pooling helpers and adapter setup for official MulSen-AD code.
-- Full extraction is not wired yet because it depends on dataset/checkpoint paths
-  and GPU runtime setup.
+- Installs compatibility fallbacks before importing the official model.
+- Wraps `timm.create_model` so the RGB/infrared DINO checkpoint path comes from
+  config rather than the official hard-coded absolute path.
+- Full extraction is not wired yet.
 
 Runner:
 
@@ -156,24 +168,28 @@ Tests:
 
 - `tests/test_mulsen_pairing.py`
 - `tests/test_memory_scores.py`
+- `tests/test_extension_fallbacks.py`
+
+Runtime compatibility:
+
+- `src/extension_fallbacks.py`
+- Provides pure-Torch replacements for the `knn_cuda` and `pointnet2_ops` APIs
+  needed by the official model.
 
 ## Current Blockers
 
-1. PointMAE checkpoint must be placed under `checkpoints/pointmae_pretrain.pth`.
-2. DINO/timm RGB backbone checkpoint handling must be fixed.
-   The official code contains a hard-coded local checkpoint path, so the pilot
-   should replace this with configuration-driven paths before full extraction.
-3. Official GPU/runtime dependencies still need to be installed and smoke-tested
-   on the remote cluster.
-4. Full embedding extraction has not been executed.
-5. E1-E6 have not yet been run.
+1. Official model construction with the configured checkpoints needs a remote
+   smoke test.
+2. Full embedding extraction has not been implemented or executed.
+3. E1-E6 have not yet been run.
 
 ## Next Steps
 
-1. Populate `checkpoints/pointmae_pretrain.pth` on the remote cluster.
-2. Patch or wrap the official model construction so checkpoint paths come from
-   configuration rather than hard-coded absolute paths.
-3. Install and validate official GPU/runtime dependencies on the remote cluster.
+1. Pull the fallback/runtime changes on the remote cluster.
+2. Install the official runtime requirements:
+   `uv pip install -r requirements/official-mulsen-gpu.txt`
+3. Smoke-test official model import and construction with the configured
+   checkpoints.
 4. Run a small dataset smoke test:
    - one category
    - a few train samples
@@ -202,5 +218,6 @@ cd ~/MulSenBaseline
 git pull --ff-only origin main
 git submodule update --init --recursive
 uv sync --python 3.8
+uv pip install -r requirements/official-mulsen-gpu.txt
 uv run pytest
 ```

@@ -1,6 +1,6 @@
 # Runtime Dependencies: Dataset and Encoder Checkpoints
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 ## Dataset Location
 
@@ -29,6 +29,9 @@ The Hugging Face dataset repository currently reports about 25.5 GB total across
 all uploaded archives. The official README names `MulSen_AD.rar`, which is about
 7.54 GB compressed. Only one extracted dataset copy should be kept under
 `Data/MulSen_AD`.
+
+The downloaded `MulSen_AD.zip` archive is about 8.4 GiB. After extraction, the
+dataset directory is about 18 GiB.
 
 ## PointMAE
 
@@ -142,3 +145,32 @@ Use Option A and implement a local adapter/wrapper in our `src/` code so the
 official encoder architecture is reused but checkpoint paths come from config.
 This preserves the upstream official code while making our experiment
 reproducible.
+
+## CUDA Extension Decision
+
+The official MulSen-AD code imports two legacy CUDA extension packages:
+
+```text
+knn_cuda
+pointnet2_ops
+```
+
+On the current remote GPU stack, these are brittle: the old KNN wheel is no
+longer reliably installable from the documented URL, and `pointnet2_ops` can
+build but fail at import time because of CUDA/PyTorch/GCC ABI mismatches.
+
+For the pilot, we use pure-Torch compatibility fallbacks in:
+
+```text
+src/extension_fallbacks.py
+```
+
+These provide the small API surface the official model needs:
+
+- `knn_cuda.KNN`
+- `pointnet2_ops.pointnet2_utils.furthest_point_sample`
+- `pointnet2_ops.pointnet2_utils.gather_operation`
+
+This is slower than compiled CUDA kernels, but acceptable for the pilot because
+we only need to cache embeddings once before running the E1-E6 scoring
+experiments.
