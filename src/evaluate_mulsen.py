@@ -30,10 +30,11 @@ def per_category_metrics(categories: np.ndarray, labels: np.ndarray, scores: np.
 
 def macro_average(category_metrics: dict[str, dict[str, float]]) -> dict[str, float]:
     keys = ("auroc", "auprc")
-    return {
-        key: float(np.nanmean([metrics[key] for metrics in category_metrics.values()]))
-        for key in keys
-    }
+    result = {}
+    for key in keys:
+        values = np.asarray([metrics[key] for metrics in category_metrics.values()], dtype=np.float32)
+        result[key] = float(np.nanmean(values)) if np.isfinite(values).any() else float("nan")
+    return result
 
 
 def save_json(path: Union[str, Path], payload: dict) -> None:
