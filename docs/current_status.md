@@ -91,6 +91,21 @@ Result:
 5 passed
 ```
 
+Remote dataset checks:
+
+```bash
+python scripts/run_mulsen_pilot.py --config configs/mulsen_pilot.yaml index
+```
+
+Result:
+
+```text
+15 categories
+1391 train samples
+644 test samples
+2035 total samples
+```
+
 ## Implemented So Far
 
 Configuration:
@@ -144,34 +159,32 @@ Tests:
 
 ## Current Blockers
 
-1. Dataset files must be placed under `Data/MulSen_AD` on the remote cluster.
-2. PointMAE checkpoint must be placed under `checkpoints/pointmae_pretrain.pth`.
-3. DINO/timm RGB backbone checkpoint handling must be fixed.
+1. PointMAE checkpoint must be placed under `checkpoints/pointmae_pretrain.pth`.
+2. DINO/timm RGB backbone checkpoint handling must be fixed.
    The official code contains a hard-coded local checkpoint path, so the pilot
    should replace this with configuration-driven paths before full extraction.
-4. Official GPU/runtime dependencies still need to be installed and smoke-tested
+3. Official GPU/runtime dependencies still need to be installed and smoke-tested
    on the remote cluster.
-5. Full embedding extraction has not been executed.
-6. E1-E6 have not yet been run.
+4. Full embedding extraction has not been executed.
+5. E1-E6 have not yet been run.
 
 ## Next Steps
 
-1. Populate `Data/MulSen_AD` on the remote cluster.
-2. Populate `checkpoints/pointmae_pretrain.pth` on the remote cluster.
-3. Patch or wrap the official model construction so checkpoint paths come from
+1. Populate `checkpoints/pointmae_pretrain.pth` on the remote cluster.
+2. Patch or wrap the official model construction so checkpoint paths come from
    configuration rather than hard-coded absolute paths.
-4. Install and validate official GPU/runtime dependencies on the remote cluster.
-5. Run a small dataset smoke test:
+3. Install and validate official GPU/runtime dependencies on the remote cluster.
+4. Run a small dataset smoke test:
    - one category
    - a few train samples
    - a few test samples
    - verify paired sample IDs
    - verify finite embeddings
-6. Implement full cached embedding extraction.
-7. Implement end-to-end E1-E5 scoring from cached embeddings.
-8. Add E6 projection training and discrepancy scoring.
-9. Save predictions, metrics, resolved config, and timing artifacts.
-10. Generate the required table and figures.
+5. Implement full cached embedding extraction.
+6. Implement end-to-end E1-E5 scoring from cached embeddings.
+7. Add E6 projection training and discrepancy scoring.
+8. Save predictions, metrics, resolved config, and timing artifacts.
+9. Generate the required table and figures.
 
 ## Sync Commands
 

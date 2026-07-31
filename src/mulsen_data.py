@@ -40,6 +40,8 @@ class MulSenSample:
 
 
 def resolve_categories(dataset_root: Path, categories: Iterable[str] | str = "all") -> list[str]:
+    if not dataset_root.is_dir():
+        raise FileNotFoundError(f"Missing MulSen-AD dataset root: {dataset_root}")
     if categories == "all":
         return [name for name in MULSEN_CLASSES if (dataset_root / name).is_dir()]
     return list(categories)
@@ -48,6 +50,8 @@ def resolve_categories(dataset_root: Path, categories: Iterable[str] | str = "al
 def build_sample_index(dataset_root: Union[str, Path], categories: Union[Iterable[str], str] = "all") -> list[MulSenSample]:
     root = Path(dataset_root)
     selected = resolve_categories(root, categories)
+    if not selected:
+        raise ValueError(f"No MulSen-AD categories found under {root}")
     records: list[MulSenSample] = []
     for category in selected:
         records.extend(_build_train_records(root, category))

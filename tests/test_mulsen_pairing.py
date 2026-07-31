@@ -34,6 +34,11 @@ def test_build_sample_index_rejects_unmatched_modalities(tmp_path: Path) -> None
         build_sample_index(root, categories=["capsule"])
 
 
+def test_build_sample_index_rejects_missing_dataset_root(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="Missing MulSen-AD dataset root"):
+        build_sample_index(tmp_path / "missing", categories="all")
+
+
 def _write_sample(root: Path, category: str, split: str, anomaly_type: str, stem: str) -> None:
     if split == "train":
         parts = {
