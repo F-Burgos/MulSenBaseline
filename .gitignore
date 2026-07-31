@@ -6,6 +6,7 @@ __pycache__/
 codex_mulsen_ad_pilot.md
 
 artifacts/
+Data/
 datasets/
 checkpoints/
 *.npz
