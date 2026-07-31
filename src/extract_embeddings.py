@@ -58,7 +58,12 @@ def load_official_model_class(official_repo: Union[str, Path]):
 
 def create_official_model(args, rgb_checkpoint: Optional[str] = None):
     install_extension_fallbacks()
+    import torch
     import timm
+
+    device = getattr(args, "device", None)
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     original_create_model = timm.create_model
 
@@ -71,7 +76,14 @@ def create_official_model(args, rgb_checkpoint: Optional[str] = None):
     timm.create_model = create_model_with_configured_checkpoint
     try:
         model_class = load_official_model_class(args.official_repo)
-        return model_class(args)
+        model = model_class(
+            device=device,
+            rgb_backbone_name=args.rgb_backbone_name,
+            xyz_backbone_name=args.xyz_backbone_name,
+            group_size=args.group_size,
+            num_group=args.num_group,
+        )
+        return model.to(device).eval()
     finally:
         timm.create_model = original_create_model
 
