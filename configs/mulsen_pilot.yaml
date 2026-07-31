@@ -3,10 +3,10 @@ experiment:
   seeds: [0, 1, 2]
 
 paths:
-  dataset_root: datasets/MulSen_AD
+  dataset_root: Data/MulSen_AD
   official_repo: official/MulSen-AD
   artifacts_root: artifacts
-  rgb_checkpoint: null
+  rgb_checkpoint: checkpoints/vit_base_patch8_224.dino.pth
   point_checkpoint: checkpoints/pointmae_pretrain.pth
 
 data:
