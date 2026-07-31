@@ -28,10 +28,10 @@ The key scientific comparison is:
   - virtual environments
   - Python caches
 
-Current pushed baseline commit:
+Current implementation baseline:
 
 ```text
-32982d9 Load DINO checkpoint non-strictly
+latest pushed main branch
 ```
 
 ## Environment
@@ -103,6 +103,35 @@ Synthetic forward pass with reduced point groups: passed
 The forward smoke produced RGB and infrared feature maps shaped
 `1 x 768 x 28 x 28` and exercised the pure-Torch point-cloud fallback path.
 
+Remote extraction/scoring smoke checks:
+
+```text
+capsule smoke cache: 45 train + 45 test samples
+RGB embeddings: 768D
+infrared embeddings: 768D
+point-cloud embeddings: 1152D
+finite embeddings: passed
+E1-E5 scoring: passed
+```
+
+Smoke artifacts:
+
+```text
+artifacts/embeddings/smoke_capsule_45_per_split.npz
+artifacts/predictions/smoke_capsule_45_scores.csv
+artifacts/metrics/smoke_capsule_45_metrics.json
+```
+
+Capsule smoke overall AUROC/AUPRC:
+
+```text
+E1 RGB: 0.9943 / 0.9985
+E2 infrared: 0.9314 / 0.9819
+E3 point cloud: 0.9700 / 0.9913
+E4 concatenation: 1.0000 / 1.0000
+E5 decision fusion: 1.0000 / 1.0000
+```
+
 Remote dataset checks:
 
 ```bash
@@ -164,11 +193,19 @@ Evaluation:
 Embedding extraction scaffold:
 
 - `src/extract_embeddings.py`
-- Contains pooling helpers and adapter setup for official MulSen-AD code.
+- Contains pooling helpers, sample loading, and adapter setup for official
+  MulSen-AD code.
 - Installs compatibility fallbacks before importing the official model.
 - Wraps `timm.create_model` so the RGB/infrared DINO checkpoint path comes from
   config rather than the official hard-coded absolute path.
-- Full extraction is not wired yet.
+- Caches object-level RGB, infrared, and point-cloud embeddings to compressed
+  `.npz` files.
+
+Embedding scoring:
+
+- `src/score_embeddings.py`
+- Implements E1-E5 memory-bank scoring from cached embeddings.
+- Saves per-sample prediction CSV files and JSON metric summaries.
 
 Runner:
 
@@ -180,6 +217,7 @@ Tests:
 - `tests/test_mulsen_pairing.py`
 - `tests/test_memory_scores.py`
 - `tests/test_extension_fallbacks.py`
+- `tests/test_score_embeddings.py`
 
 Runtime compatibility:
 
@@ -189,22 +227,17 @@ Runtime compatibility:
 
 ## Current Blockers
 
-1. Full embedding extraction has not been implemented or executed.
-2. E1-E6 have not yet been run.
+1. Full all-category embedding extraction has not been executed.
+2. E6 cross-modal projection/discrepancy scoring has not been wired into the
+   runner.
 
 ## Next Steps
 
-1. Implement full cached embedding extraction.
-2. Run a small dataset smoke test:
-   - one category
-   - a few train samples
-   - a few test samples
-   - verify paired sample IDs
-   - verify finite embeddings
-3. Implement end-to-end E1-E5 scoring from cached embeddings.
-4. Add E6 projection training and discrepancy scoring.
-5. Save predictions, metrics, resolved config, and timing artifacts.
-6. Generate the required table and figures.
+1. Run full all-category cached embedding extraction.
+2. Run full E1-E5 scoring from cached embeddings.
+3. Add E6 projection training and discrepancy scoring.
+4. Save resolved config and timing artifacts.
+5. Generate the required table and figures.
 
 ## Sync Commands
 
