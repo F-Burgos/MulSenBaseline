@@ -31,7 +31,7 @@ The key scientific comparison is:
 Current pushed baseline commit:
 
 ```text
-19b613b Add CUDA extension build helpers
+32982d9 Load DINO checkpoint non-strictly
 ```
 
 ## Environment
@@ -91,6 +91,17 @@ Result:
 ```text
 6 passed
 ```
+
+Remote official model smoke checks:
+
+```text
+Official Model import: passed
+Official Model construction with configured DINO and PointMAE checkpoints: passed
+Synthetic forward pass with reduced point groups: passed
+```
+
+The forward smoke produced RGB and infrared feature maps shaped
+`1 x 768 x 28 x 28` and exercised the pure-Torch point-cloud fallback path.
 
 Remote dataset checks:
 
@@ -178,29 +189,22 @@ Runtime compatibility:
 
 ## Current Blockers
 
-1. Official model construction with the configured checkpoints needs a remote
-   smoke test.
-2. Full embedding extraction has not been implemented or executed.
-3. E1-E6 have not yet been run.
+1. Full embedding extraction has not been implemented or executed.
+2. E1-E6 have not yet been run.
 
 ## Next Steps
 
-1. Pull the fallback/runtime changes on the remote cluster.
-2. Install the official runtime requirements:
-   `uv pip install -r requirements/official-mulsen-gpu.txt`
-3. Smoke-test official model import and construction with the configured
-   checkpoints.
-4. Run a small dataset smoke test:
+1. Implement full cached embedding extraction.
+2. Run a small dataset smoke test:
    - one category
    - a few train samples
    - a few test samples
    - verify paired sample IDs
    - verify finite embeddings
-5. Implement full cached embedding extraction.
-6. Implement end-to-end E1-E5 scoring from cached embeddings.
-7. Add E6 projection training and discrepancy scoring.
-8. Save predictions, metrics, resolved config, and timing artifacts.
-9. Generate the required table and figures.
+3. Implement end-to-end E1-E5 scoring from cached embeddings.
+4. Add E6 projection training and discrepancy scoring.
+5. Save predictions, metrics, resolved config, and timing artifacts.
+6. Generate the required table and figures.
 
 ## Sync Commands
 

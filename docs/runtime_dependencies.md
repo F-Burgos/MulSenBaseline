@@ -152,6 +152,11 @@ The adapter also maps the official `vit_base_patch8_224_dino` alias to the
 available `timm` architecture name `vit_base_patch8_224` while loading the DINO
 weights from `checkpoints/vit_base_patch8_224.dino.pth`.
 
+The DINO checkpoint is loaded with non-strict state-dict matching because the
+downloaded feature checkpoint does not include the classifier head parameters
+(`head.weight` and `head.bias`). This is acceptable for embedding extraction,
+which uses transformer feature maps rather than classifier logits.
+
 This preserves the upstream official code while making our experiment
 reproducible.
 
