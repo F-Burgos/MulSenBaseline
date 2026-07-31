@@ -68,6 +68,11 @@ def create_official_model(args, rgb_checkpoint: Optional[str] = None):
     original_create_model = timm.create_model
 
     def create_model_with_configured_checkpoint(*model_args, **kwargs):
+        model_args = list(model_args)
+        if model_args and model_args[0] == "vit_base_patch8_224_dino":
+            model_args[0] = "vit_base_patch8_224"
+        if kwargs.get("model_name") == "vit_base_patch8_224_dino":
+            kwargs["model_name"] = "vit_base_patch8_224"
         if rgb_checkpoint:
             kwargs["checkpoint_path"] = rgb_checkpoint
             kwargs["pretrained"] = False

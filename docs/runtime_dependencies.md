@@ -70,15 +70,20 @@ paths:
 ## DINO/timm RGB Checkpoint Issue
 
 The official MulSen-AD model constructs the RGB/infrared image encoder using
-`timm`, but the code currently contains a hard-coded absolute checkpoint path:
+`timm`, but the code currently has two portability issues:
+
+1. It contains a hard-coded absolute checkpoint path:
 
 ```text
 /home/lc/.cache/huggingface/hub/models--timm--vit_base_patch8_224.dino/pytorch_model.bin
 ```
 
-That path belongs to the original authors' machine and will not exist in our
-local workspace or on the remote cluster. If left unchanged, RGB/infrared
-embedding extraction will fail even if the dataset is present.
+2. It requests the model name `vit_base_patch8_224_dino`, which is not available
+   in the tested `timm` registry.
+
+The checkpoint path belongs to the original authors' machine and will not exist
+in our local workspace or on the remote cluster. If left unchanged,
+RGB/infrared embedding extraction will fail even if the dataset is present.
 
 The affected backbone is:
 
@@ -143,6 +148,10 @@ Cons:
 
 Use Option A and implement a local adapter/wrapper in our `src/` code so the
 official encoder architecture is reused but checkpoint paths come from config.
+The adapter also maps the official `vit_base_patch8_224_dino` alias to the
+available `timm` architecture name `vit_base_patch8_224` while loading the DINO
+weights from `checkpoints/vit_base_patch8_224.dino.pth`.
+
 This preserves the upstream official code while making our experiment
 reproducible.
 
